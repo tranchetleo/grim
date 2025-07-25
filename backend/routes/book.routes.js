@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const bookController = require('../controllers/book.controller');
 const auth = require('../middleware/auth');
+const upload = require('../middleware/upload');
 
 // GET tous les livres
 router.get('/', bookController.getAllBooks);
@@ -10,7 +11,7 @@ router.get('/', bookController.getAllBooks);
 router.get('/bestrating', bookController.getBestRatedBooks);
 
 // POST un nouveau livre
-router.post('/', auth, bookController.createBook);
+router.post('/', auth, upload, upload.resizeImage, bookController.createBook);
 
 // GET un livre par ID
 router.get('/:id', bookController.getBookById);
