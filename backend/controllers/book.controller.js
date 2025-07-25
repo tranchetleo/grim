@@ -11,8 +11,17 @@ exports.getBestRatedBooks = async (req, res) => {
 };
 
 exports.createBook = async (req, res) => {
-  console.log('Creating book:', req);
-  const book = new Book({ userId: req.body.userId, title: req.body.title, author: req.body.author, imageUrl: req.body.imageUrl, year: req.body.year, genre: req.body.genre });
+  // Create a new book object
+  const bookObject = JSON.parse(req.body.book);
+  delete bookObject._id;
+  delete bookObject._userId;
+
+  const book = new Book({
+    ...bookObject,
+    userId: req.auth.userId,
+    imageUrl: `${req.protocol}://${req.get('host')}/images/resized_${req.file.filename}`,
+    averageRating: bookObject.ratings.length > 0 ? bookObject.ratings[0].grade : 0,
+  });
   await book.save();
   res.status(201).json(book);
 };

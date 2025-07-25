@@ -35,3 +35,6 @@ module.exports = app;
 // Routes API
 app.use('/api/auth', authRoutes);
 app.use('/api/books', bookRoutes);
+
+// Route images
+app.use('/images', express.static('images'));
