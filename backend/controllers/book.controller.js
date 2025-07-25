@@ -33,7 +33,21 @@ exports.getBookById = async (req, res) => {
 };
 
 exports.updateBook = async (req, res) => {
-  const book = await Book.findByIdAndUpdate(req.params.id, req.body, { new: true });
+  console.log('Mise à jour du livre...');
+  const bookObject = req.file ? {
+    ...JSON.parse(req.body.book),
+    imageUrl: `${req.protocol}://${req.get('host')}/images/resized_${req.file.filename}`,
+  } : { ...req.body };
+
+  delete bookObject._id;
+  delete bookObject._userId;
+
+  const book = await Book.findByIdAndUpdate(req.params.id, {
+    ...bookObject,
+    userId: req.auth.userId,
+  }, { new: true });
+
+  if (!book) return res.status(404).json({ message: 'Livre non trouvé' });
   res.json(book);
 };
 

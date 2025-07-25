@@ -17,7 +17,7 @@ router.post('/', auth, upload, upload.resizeImage, bookController.createBook);
 router.get('/:id', bookController.getBookById);
 
 // PUT modifier un livre
-router.put('/:id', auth, bookController.updateBook);
+router.put('/:id', auth, upload, upload.resizeImage, bookController.updateBook);
 
 // DELETE un livre
 router.delete('/:id', auth, bookController.deleteBook);
