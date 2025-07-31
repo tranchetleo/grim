@@ -13,6 +13,9 @@ router.get('/bestrating', bookController.getBestRatedBooks);
 // POST un nouveau livre
 router.post('/', auth, upload, upload.resizeImage, bookController.createBook);
 
+// POST une note pour un livre
+router.post('/:id/rating', auth, bookController.addRating);
+
 // GET un livre par ID
 router.get('/:id', bookController.getBookById);
 

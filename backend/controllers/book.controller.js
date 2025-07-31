@@ -77,3 +77,39 @@ exports.deleteBook = async (req, res) => {
   await Book.findByIdAndDelete(req.params.id);
   res.status(204).end();
 };
+
+exports.addRating = async (req, res) => {
+  const { id } = req.params;
+  const { userId, rating } = req.body;
+
+  // Check if the book exists
+  const book = await Book.findById(id);
+  if (!book) return res.status(404).json({ message: 'Livre non trouvé' });
+
+  // Check if the user has already rated this book
+  const existingRating = book.ratings.find(rating => rating.userId === userId);
+  if (existingRating) {
+    // If the user has already rated the book, update the rating
+    existingRating.grade = rating;
+  } else {
+    // If the user has not rated the book yet, add a new rating
+    book.ratings.push({
+      userId,
+      grade: rating
+    });
+  }
+
+  const ratingCount = book.ratings.length;
+  let ratingSum = 0;
+  book.ratings.forEach(element => {
+    ratingSum += element.grade;
+  });
+
+  // Calculate the new average rating
+  if (ratingCount > 0) {
+    book.averageRating = Number((ratingSum / ratingCount).toFixed(2));
+  }
+
+  await book.save();
+  res.status(201).json(book);
+};
