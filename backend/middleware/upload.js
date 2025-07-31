@@ -9,44 +9,28 @@ const MIME_TYPES = {
   'image/png': 'png'
 };
 
-// Configuration
-const storage = multer.diskStorage({
-  // Enregistrement des fichiers dans le dossier images
-  destination: (req, file, callback) => {
-    callback(null, 'images');
-  },
+// Use memory storage so the original file is not saved to disk
+const storage = multer.memoryStorage();
 
-  // Nom des images => nom d'origine, remplacement des espaces et des points par des underscores, ajout d'un timestamp
-  filename: (req, file, callback) => {
-    const name = file.originalname.replace(/[\s.]+/g, '_');
-    const extension = MIME_TYPES[file.mimetype];
-    callback(null, name + Date.now() + '.' + extension);
-  }
-});
-
-// Gestion des téléchargements de fichiers image uniquement
 module.exports = multer({ storage: storage }).single('image');
 
-// Redimensionnement de l'image
 module.exports.resizeImage = (req, res, next) => {
-  // On vérifie si un fichier a été téléchargé
   if (!req.file) {
     return next();
   }
 
-  const filePath = req.file.path;
-  const fileName = req.file.filename;
+  const extension = MIME_TYPES[req.file.mimetype];
+  const name = req.file.originalname.replace(/[\s.]+/g, '_');
+  const fileName = name + Date.now() + '.' + extension;
   const outputFilePath = path.join('images', `resized_${fileName}`);
 
-  sharp(filePath)
+  sharp(req.file.buffer)
     .resize({ width: 206, height: 260 })
     .toFile(outputFilePath)
     .then(() => {
-      // Remplacer le fichier original par le fichier redimensionné
-      fs.unlink(filePath, () => {
-        req.file.path = outputFilePath;
-        next();
-      });
+      req.file.path = outputFilePath;
+      req.file.filename = `resized_${fileName}`;
+      next();
     })
     .catch(err => {
       console.log(err);
