@@ -1,4 +1,6 @@
 const Book = require('../models/book.model');
+const fs = require('fs');
+const path = require('path');
 
 exports.getAllBooks = async (req, res) => {
   const books = await Book.find();
@@ -42,6 +44,16 @@ exports.updateBook = async (req, res) => {
   delete bookObject._id;
   delete bookObject._userId;
 
+  const oldBook = await Book.findById(req.params.id);
+  if (req.file && oldBook && oldBook.imageUrl) {
+    const oldImage = oldBook.imageUrl.split('/images/')[1];
+    if (oldImage) {
+      fs.unlink(path.join('images', oldImage), err => {
+        if (err) console.error('Erreur lors de la suppression de l\'ancienne image:', err);
+      });
+    }
+  }
+
   const book = await Book.findByIdAndUpdate(req.params.id, {
     ...bookObject,
     userId: req.auth.userId,
@@ -52,6 +64,16 @@ exports.updateBook = async (req, res) => {
 };
 
 exports.deleteBook = async (req, res) => {
+  const book = await Book.findById(req.params.id);
+  if (book && book.imageUrl) {
+    const imageName = book.imageUrl.split('/images/')[1];
+    if (imageName) {
+      fs.unlink(path.join('images', imageName), err => {
+        if (err) console.error('Erreur lors de la suppression de l\'image :', err);
+      });
+    }
+  }
+
   await Book.findByIdAndDelete(req.params.id);
   res.status(204).end();
 };
