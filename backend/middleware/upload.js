@@ -29,7 +29,7 @@ module.exports.resizeImage = (req, res, next) => {
     .toFile(outputFilePath)
     .then(() => {
       req.file.path = outputFilePath;
-      req.file.filename = `resized_${fileName}`;
+      req.file.filename = fileName;
       next();
     })
     .catch(err => {
